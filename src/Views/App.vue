@@ -372,8 +372,9 @@ import Picture from '@/Components/Rich/Picture.vue'
 import Media from '@/Components/Rich/Media.vue'
 import TableCard from '@/Components/Rich/TableCard.vue'
 import Suggestion from '@/Components/Rich/Suggestion.vue'
+import { Buffer } from 'buffer';
 
-import * as uuidv1 from 'uuid/v1'
+import { v1 as uuidv1 } from 'uuid';
 import Vue from 'vue'
 import VueResource from 'vue-resource'
 Vue.use(VueResource);
@@ -542,7 +543,7 @@ export default {
             if (response.outputAudio){
                 const mime = this.config.codecs[response.outputAudioConfig.audioEncoding] || this.config.codecs.OUTPUT_AUDIO_ENCODING_UNSPECIFIED
                 
-                const base64Audio = (new Buffer(response.outputAudio.data)).toString('base64');
+                const base64Audio = (Buffer.from(response.outputAudio.data)).toString('base64');
                 
                 const src = `data:${mime};base64,${base64Audio}`
                 const output = new Audio(src);
