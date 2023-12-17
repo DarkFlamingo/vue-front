@@ -1,5 +1,6 @@
 <template>
     <main id="app">
+        <div id="model-container"></div>
         <!-- TopHead is the header with the information about the app -->
         <section class="container chat-container">
             <!-- Error component is for displaying errors -->
@@ -12,7 +13,6 @@
 
             <!-- Messages Table -->
             <section v-else aria-live="polite">
-                <div id="model-container"></div>
                 <div v-for="message in messages" id="message" :key="message.responseId">
                     <!-- My message -->
                     <BubbleWrapper>
@@ -237,6 +237,16 @@ body
     margin-right: auto
     padding: 12px
     position: relative
+
+.chat-container
+    margin-top: 500px
+
+#model-container
+    position: fixed
+    top: 0
+    left: 50%
+    transform: translate(-50%, 0)
+    z-index: 2
 </style>
 
 <style lang="sass" scoped>
@@ -295,64 +305,21 @@ export default {
         Suggestion
     },
     mounted() {
-        // const scene = new THREE.Scene();
-        // const clock = new THREE.Clock();
-        // const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        // const light = new THREE.AmbientLight(0x404040);
-        // scene.add(light);
-
-        // const loader = new GLTFLoader();
-        // const renderer = new THREE.WebGLRenderer();
-        // renderer.setSize(500, 500);
-        // document.getElementById('model-container').appendChild(renderer.domElement);
-
-        // loader.load('/idle_animation.glb', function (gltf) {
-        //     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        //     const model = gltf.scene;
-        //     model.traverse((child) => {
-        //         if (child.isMesh) {
-        //             child.material = material;
-        //         }
-        //     });
-
-        //     // Add the model to the scene
-        //     scene.add(model);
-        //     var box = new THREE.Box3().setFromObject(gltf.scene);
-        //     var size = box.getSize(new THREE.Vector3());
-        //     var maxAxis = Math.max(size.x, size.y, size.z);
-        //     var scale = 1 / maxAxis;
-        //     gltf.scene.scale.set(scale, scale, scale);
-        //     const mixer = new THREE.AnimationMixer(gltf.scene);
-        //     const action = mixer.clipAction(gltf.animations[0]);
-        //     console.log(gltf)
-        //     action.play();
-
-        //     function animate() {
-        //         requestAnimationFrame(animate);
-        //         const delta = clock.getDelta();
-        //         mixer.update(delta);
-        //         renderer.render(scene, camera);
-        //     }
-        //     animate();
-        // });
         const clock = new THREE.Clock();
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(500, 500);
-        renderer.setClearColor(0x000000, 0);
+        renderer.setSize(510, 500);
+        // renderer.setClearColor(0x000000, 0);
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.getElementById('model-container').appendChild(renderer.domElement);
 
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshStandardMaterial ({
             color: 0x00ff00,
             roughness: 0.5,
             metalness: 0.5,
         });
-        const cube = new THREE.Mesh(geometry, material);
-        // scene.add(cube);
 
 
 
@@ -369,6 +336,7 @@ export default {
                 }
             });
             scene.add(model);
+            scene.background = new THREE.Color(0x202124);
 
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
             directionalLight.position.set(5, 5, 5);

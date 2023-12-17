@@ -49,6 +49,7 @@
     left: 0
     width: 100%
     background-color: var(--background)
+    //height: 60px
 
 .flexible
     display: flex
