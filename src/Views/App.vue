@@ -283,6 +283,20 @@ import Vue from 'vue'
 import VueResource from 'vue-resource'
 Vue.use(VueResource);
 
+const defaultFallbackPhrases = [
+    'I didn\'t get that. Can you say it again?',
+    'I missed what you said. What was that?',
+    'Sorry, could you say that again?',
+    'Sorry, can you say that again?',
+    'Can you say that again?',
+    'Sorry, I didn\'t get that. Can you rephrase?',
+    'Sorry, what was that?',
+    'One more time?',
+    'What was that?',
+    'Say that one more time?',
+    'I didn\'t get that. Can you repeat?',
+    'I missed that, say that again?',
+];
 
 export default {
     name: 'App',
@@ -305,75 +319,7 @@ export default {
         Suggestion
     },
     mounted() {
-        const clock = new THREE.Clock();
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(510, 500);
-        // renderer.setClearColor(0x000000, 0);
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.getElementById('model-container').appendChild(renderer.domElement);
-
-        const material = new THREE.MeshStandardMaterial ({
-            color: 0x00ff00,
-            roughness: 0.5,
-            metalness: 0.5,
-        });
-
-
-
-        const loader = new GLTFLoader();
-
-        loader.load('/idle_animation.glb', function (gltf) {
-
-            const model = gltf.scene;
-            model.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = material;
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }
-            });
-            scene.add(model);
-            scene.background = new THREE.Color(0x202124);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(5, 5, 5);
-            directionalLight.castShadow = true; // Enable shadow casting
-            scene.add(directionalLight);
-
-            // Set up shadow properties for the light
-            directionalLight.shadow.mapSize.width = 1024; // Set these values based on your scene requirements
-            directionalLight.shadow.mapSize.height = 1024;
-            directionalLight.shadow.camera.near = 0.1;
-            directionalLight.shadow.camera.far = 50;
-
-            camera.position.z = 2;
-            camera.position.y = 1.2;
-            const mixer = new THREE.AnimationMixer(gltf.scene);
-            for (let i = 0; i < gltf.animations.length; i++) {
-                const action = mixer.clipAction(gltf.animations[i]);
-                action.play();
-            }
-
-            function animate() {
-
-                requestAnimationFrame(animate);
-                const delta = clock.getDelta();
-                mixer.update(delta);
-                
-                renderer.render(scene, camera);
-
-            }
-
-            animate();
-
-        }, undefined, function (error) {
-
-            console.error(error);
-
-        });
+        this.loadBaseModel();
     },
     data() {
         return {
@@ -553,7 +499,163 @@ export default {
                 if (!this.muted) window.speechSynthesis.speak(speech) // <- if app is not muted, speak out the speech
             }
 
+            if (defaultFallbackPhrases.includes(response.queryResult.fulfillmentText)) {
+                this.loadNoResponseAnimationModel();
+                setTimeout(() => {
+                    this.loadBaseModel();
+                }, 1500);
+            }
+
             delete response.outputAudio;
+        },
+        loadBaseModel() {
+            const clock = new THREE.Clock();
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(510, 500);
+            // renderer.setClearColor(0x000000, 0);
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            // document.getElementById('model-container').removeChild();
+            const container = document.getElementById('model-container');
+            while (container.firstChild) {
+                container.removeChild(container.lastChild);
+            }
+            container.appendChild(renderer.domElement);
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x00ff00,
+                roughness: 0.5,
+                metalness: 0.5,
+            });
+
+
+            const loader = new GLTFLoader();
+
+            loader.load('/idle_animation.glb', function (gltf) {
+
+                const model = gltf.scene;
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = material;
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(model);
+                scene.background = new THREE.Color(0x202124);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(5, 5, 5);
+                directionalLight.castShadow = true; // Enable shadow casting
+                scene.add(directionalLight);
+
+                // Set up shadow properties for the light
+                directionalLight.shadow.mapSize.width = 1024; // Set these values based on your scene requirements
+                directionalLight.shadow.mapSize.height = 1024;
+                directionalLight.shadow.camera.near = 0.1;
+                directionalLight.shadow.camera.far = 50;
+
+                camera.position.z = 2;
+                camera.position.y = 1.2;
+                const mixer = new THREE.AnimationMixer(gltf.scene);
+                for (let i = 0; i < gltf.animations.length; i++) {
+                    const action = mixer.clipAction(gltf.animations[i]);
+                    action.play();
+                }
+
+                function animate() {
+
+                    requestAnimationFrame(animate);
+                    const delta = clock.getDelta();
+                    mixer.update(delta);
+
+                    renderer.render(scene, camera);
+
+                }
+
+                animate();
+
+            }, undefined, function (error) {
+
+                console.error(error);
+
+            });
+        },
+        loadNoResponseAnimationModel() {
+            const clock = new THREE.Clock();
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(510, 500);
+            // renderer.setClearColor(0x000000, 0);
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            const container = document.getElementById('model-container');
+            while (container.firstChild) {
+                container.removeChild(container.lastChild);
+            }
+            container.appendChild(renderer.domElement);
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x00ff00,
+                roughness: 0.5,
+                metalness: 0.5,
+            });
+
+
+            const loader = new GLTFLoader();
+
+            loader.load('/no-response-animation.glb', function (gltf) {
+
+                const model = gltf.scene;
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = material;
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(model);
+                scene.background = new THREE.Color(0x202124);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(5, 5, 5);
+                directionalLight.castShadow = true; // Enable shadow casting
+                scene.add(directionalLight);
+
+                // Set up shadow properties for the light
+                directionalLight.shadow.mapSize.width = 1024; // Set these values based on your scene requirements
+                directionalLight.shadow.mapSize.height = 1024;
+                directionalLight.shadow.camera.near = 0.1;
+                directionalLight.shadow.camera.far = 50;
+
+                camera.position.z = 2;
+                camera.position.y = 1.2;
+                const mixer = new THREE.AnimationMixer(gltf.scene);
+                for (let i = 0; i < gltf.animations.length; i++) {
+                    const action = mixer.clipAction(gltf.animations[i]);
+                    action.play();
+                }
+
+                function animate() {
+
+                    requestAnimationFrame(animate);
+                    const delta = clock.getDelta();
+                    mixer.update(delta);
+
+                    renderer.render(scene, camera);
+
+                }
+
+                animate();
+
+            }, undefined, function (error) {
+
+                console.error(error);
+
+            });
         }
     }
 }
